@@ -96,23 +96,27 @@ lemlib::ControllerSettings angular_controller(
 );
 
 // Controller Input Changing
-// lemlib::ExpoDriveCurve throttle_curve(3, // joystick deadband out of 127
-//                                      10, // minimum output where drivetrain will move out of 127
-//                                      1.019 // expo curve gain
-// );
+lemlib::ExpoDriveCurve throttle_curve(
+	3, // joystick deadband out of 127
+	10, // minimum output where drivetrain will move out of 127
+	1.019 // expo curve gain
+);
 
-// // input curve for steer input during driver control
-// lemlib::ExpoDriveCurve steer_curve(3, // joystick deadband out of 127
-//                                   10, // minimum output where drivetrain will move out of 127
-//                                   1.019 // expo curve gain
-// );
+// input curve for steer input during driver control
+lemlib::ExpoDriveCurve steer_curve(
+	3, // joystick deadband out of 127
+	10, // minimum output where drivetrain will move out of 127
+	1.04 // expo curve gain
+);
 
 // Lemlib Chassis
 lemlib::Chassis chassis(
 	drivetrain,
 	lateral_controller,
 	angular_controller,
-	sensors
+	sensors,
+	&throttle_curve,
+	&steer_curve
 );
 
 /**
@@ -189,7 +193,8 @@ void opcontrol() {
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
         // move the robot
-        chassis.arcade(leftY, rightX);
+		// Gives more forward power in cost of turning speed
+        chassis.arcade(leftY, rightX, true, 0.25);
 
         // delay to save resources
         pros::delay(25);
