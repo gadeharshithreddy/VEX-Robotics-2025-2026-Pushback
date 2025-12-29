@@ -1,0 +1,14 @@
+#include "main.h"
+
+pros::Rotation r(6);
+
+void initialize() {
+    pros::lcd::initialize();
+}
+
+void opcontrol() {
+    while (true) {
+        pros::lcd::print(0, "Vertical Movement: %.0f", r.get_position());
+        pros::delay(50);
+    }
+}

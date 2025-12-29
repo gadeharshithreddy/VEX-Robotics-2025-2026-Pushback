@@ -8,6 +8,7 @@
 #include "pros/optical.hpp"
 #include "lemlib/api.hpp"
 #include "pros/rotation.hpp"
+#include <cstddef>
 
 // Brain Devices
 
@@ -15,24 +16,24 @@
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 // Drivetrain Motors
-pros::MotorGroup left_motors({-11, -1, -2}, pros::MotorGearset::blue);
-pros::MotorGroup right_motors({7, 8, 20}, pros::MotorGearset::blue);
+pros::MotorGroup left_motors({-18, -19, -20}, pros::MotorGearset::blue);
+pros::MotorGroup right_motors({1, 2, 3}, pros::MotorGearset::blue);
 
 // Intake Motors
-pros::Motor top_intake_motor(-3);
-pros::Motor bottom_intake_motor(10);
+// pros::Motor top_intake_motor(-3);
+// pros::Motor bottom_intake_motor(10);
 
 // Optical Sensor
-pros::Optical color_sensor(19);
+// pros::Optical color_sensor(19);
 
 // Pneumatics
-pros::adi::Pneumatics middle_goal_mech('A', false);
-pros::adi::Pneumatics loader_mech('B', true);
+// pros::adi::Pneumatics middle_goal_mech('A', false);
+// pros::adi::Pneumatics loader_mech('B', true);
 
 // IMU + Rotation Sensors
-pros::Imu imu(5);
-pros::Rotation horizontal_sensor(6);
-pros::Rotation vertical_sensor(9);
+pros::Imu imu(7);
+pros::Rotation horizontal_sensor(5);
+pros::Rotation vertical_sensor(6);
 
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
@@ -42,8 +43,8 @@ pros::Rotation vertical_sensor(9);
 lemlib::Drivetrain drivetrain(
 	&left_motors,
 	&right_motors,
-	12.08,
-	lemlib::Omniwheel::OLD_325,
+	14.25197,
+	lemlib::Omniwheel::NEW_325,
 	450,
 	8
 );
@@ -51,29 +52,43 @@ lemlib::Drivetrain drivetrain(
 // Lemlib Tracking Wheel Setup
 lemlib::TrackingWheel horizontal_tracking_wheel(
 	&horizontal_sensor,
-	lemlib::Omniwheel::NEW_275,
-	0
+	lemlib::Omniwheel::NEW_2,
+	-6.75
 );
 lemlib::TrackingWheel vertical_tracking_wheel(
 	&vertical_sensor,
-	lemlib::Omniwheel::NEW_275,
-	0
+	lemlib::Omniwheel::NEW_2,
+	-2.28346
 );
 
 // Lemlib Odometry Configuration
+// Wrap drivetrain motor groups as tracking wheels (uses motor encoders)
+// lemlib::TrackingWheel left_tracking_wheel(
+//     &left_motors,
+//     lemlib::Omniwheel::NEW_325, // wheel diameter — adjust if your wheels differ
+//     -12.08 / 2.0,               // distance from tracking center (negative for left side)
+//     450                         // drivetrain rpm — match drivetrain rpm in your Drivetrain
+// );
+// lemlib::TrackingWheel right_tracking_wheel(
+//     &right_motors,
+//     lemlib::Omniwheel::NEW_325,
+//     12.08 / 2.0,                // positive for right side
+//     450
+// );
+
 lemlib::OdomSensors sensors(
-	&vertical_tracking_wheel,
-	nullptr,
-	&horizontal_tracking_wheel,
-	nullptr,
-	&imu	
+    &vertical_tracking_wheel,
+    nullptr,
+    &horizontal_tracking_wheel,
+    nullptr,
+    &imu
 );
 
 // Lemlib PID Tuning
 lemlib::ControllerSettings lateral_controller(
-	10, // proportional gain (kP)
+	12.5, // proportional gain (kP)
 	0, // integral gain (kI)
-	3, // derivative gain (kD)
+	40, // derivative gain (kD)
 	0, // anti windup
 	0, // small error range, in inches
 	0, // small error range timeout, in milliseconds
@@ -84,9 +99,9 @@ lemlib::ControllerSettings lateral_controller(
 
 // angular PID controller
 lemlib::ControllerSettings angular_controller(
-	2, // proportional gain (kP)
+	5, // proportional gain (kP)
     0, // integral gain (kI)
-    10, // derivative gain (kD)
+    40, // derivative gain (kD)
 	0, // anti windup
 	0, // small error range, in degrees
 	0, // small error range timeout, in milliseconds
@@ -126,19 +141,15 @@ lemlib::Chassis chassis(
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-	pros::lcd::initialize(); // initialize brain screen
-    chassis.calibrate(); // calibrate sensors
-    // print position to brain screen
-    pros::Task screen_task([&]() {
-        while (true) {
-            // print robot location to the brain screen
-            pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
-            pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
-            pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
-            // delay to save resources
-            pros::delay(20);
-        }
-    });
+	pros::lcd::initialize();
+
+    imu.reset();
+    while (imu.is_calibrating()) {
+        pros::delay(10);
+    }
+
+    chassis.calibrate();
+    
 }
 
 /**
@@ -170,7 +181,9 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {}
+void autonomous() {
+	chassis.turnToHeading(90, 2000);
+}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -186,6 +199,21 @@ void autonomous() {}
  * task, not resume it from where it left off.
  */
 void opcontrol() {
+	pros::Task show_movement([] {
+		char buffer[32];
+		while (true) {
+			snprintf(buffer, sizeof(buffer), "X: %.2f", chassis.getPose().x);
+			pros::lcd::print(0, buffer);
+			snprintf(buffer, sizeof(buffer), "Y: %.2f", chassis.getPose().y);
+			pros::lcd::print(1, buffer);
+			snprintf(buffer, sizeof(buffer), "Theta: %.2f", chassis.getPose().theta);
+			pros::lcd::print(2, buffer);
+			pros::delay(50);
+		}  
+	});
+
+	// autonomous();
+
 	// loop forever
     while (true) {
         // get left y and right x positions
