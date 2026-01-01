@@ -4,6 +4,7 @@
 #include "pros/abstract_motor.hpp"
 #include "pros/adi.hpp"
 #include "pros/imu.hpp"
+#include "pros/misc.h"
 #include "pros/motor_group.hpp"
 #include "pros/optical.hpp"
 #include "lemlib/api.hpp"
@@ -20,15 +21,15 @@ pros::MotorGroup left_motors({-18, -19, -20}, pros::MotorGearset::blue);
 pros::MotorGroup right_motors({1, 2, 3}, pros::MotorGearset::blue);
 
 // Intake Motors
-// pros::Motor top_intake_motor(-3);
-// pros::Motor bottom_intake_motor(10);
+pros::Motor top_intake_motor(-3);
+pros::Motor bottom_intake_motor(10);
 
 // Optical Sensor
 // pros::Optical color_sensor(19);
 
 // Pneumatics
-// pros::adi::Pneumatics middle_goal_mech('A', false);
-// pros::adi::Pneumatics loader_mech('B', true);
+pros::adi::Pneumatics middle_goal_mech('A', false);
+pros::adi::Pneumatics loader_mech('B', true);
 
 // IMU + Rotation Sensors
 pros::Imu imu(7);
@@ -53,7 +54,7 @@ lemlib::Drivetrain drivetrain(
 lemlib::TrackingWheel horizontal_tracking_wheel(
 	&horizontal_sensor,
 	lemlib::Omniwheel::NEW_2,
-	-6.75
+	-7.75
 );
 lemlib::TrackingWheel vertical_tracking_wheel(
 	&vertical_sensor,
@@ -214,6 +215,13 @@ void opcontrol() {
 
 	// autonomous();
 
+	// Variables
+	bool loader_mech_extended = false;
+	bool middle_goal_mech_extended = true;
+	bool spin_top_intake = false;
+	bool spin_bottom_intake = false;
+	bool spin_bottom_intake_backward = false;
+
 	// loop forever
     while (true) {
         // get left y and right x positions
@@ -223,6 +231,72 @@ void opcontrol() {
         // move the robot
 		// Gives more forward power in cost of turning speed
         chassis.arcade(leftY, rightX, true, 0.25);
+
+		// Autonomous Testing
+		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
+		// 	chassis.setPose(0, 0, 0);
+		// 	chassis.moveToPoint(0, 24, 5000);
+		// }
+		
+		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
+		// 	chassis.setPose(0, 0, 0);
+		// 	chassis.turnToHeading(90, 2000);
+		// }
+
+
+		// Variable Control
+		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
+			// To spin the bottom intake
+			spin_bottom_intake = !spin_bottom_intake;
+		}
+
+		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
+			// To spin both at the same time
+			spin_top_intake = !spin_top_intake;
+			spin_bottom_intake = spin_top_intake;
+		}
+
+		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
+			// Loader Mechanism
+			loader_mech_extended = !loader_mech_extended;
+		}
+
+		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
+			// Middle Goal Mechanism
+			middle_goal_mech_extended = !middle_goal_mech_extended;
+		}
+
+		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
+			spin_bottom_intake_backward = !spin_bottom_intake_backward;
+			spin_bottom_intake = false;
+		}
+
+		// Setting the variable values
+		if (spin_top_intake) {
+			top_intake_motor.move_voltage(127);
+		} else {
+			top_intake_motor.move_voltage(0);
+		}
+
+		if (spin_bottom_intake) {
+			bottom_intake_motor.move_voltage(127);
+		} else if (spin_bottom_intake_backward) {
+			bottom_intake_motor.move_voltage(-127);
+		} else {
+			bottom_intake_motor.move_voltage(0);
+		}
+
+		if (middle_goal_mech_extended) {
+			middle_goal_mech.extend();
+		} else {
+			middle_goal_mech.retract();
+		}
+
+		if (loader_mech_extended) {
+			loader_mech.extend();
+		} else {
+			loader_mech.retract();
+		}
 
         // delay to save resources
         pros::delay(25);
