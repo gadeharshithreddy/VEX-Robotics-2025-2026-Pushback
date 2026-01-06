@@ -9,6 +9,7 @@
 #include "pros/optical.hpp"
 #include "lemlib/api.hpp"
 #include "pros/rotation.hpp"
+#include "pros/rtos.h"
 #include <cstddef>
 
 // Brain Devices
@@ -17,24 +18,24 @@
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 // Drivetrain Motors
-pros::MotorGroup left_motors({-18, -19, -20}, pros::MotorGearset::blue);
-pros::MotorGroup right_motors({1, 2, 3}, pros::MotorGearset::blue);
+pros::MotorGroup left_motors({-11, -12, -13}, pros::MotorGearset::blue);
+pros::MotorGroup right_motors({20, 10, 9}, pros::MotorGearset::blue);
 
 // Intake Motors
-pros::Motor top_intake_motor(-3);
-pros::Motor bottom_intake_motor(10);
+pros::Motor top_intake_motor(8);
+pros::Motor bottom_intake_motor(7);
 
 // Optical Sensor
 // pros::Optical color_sensor(19);
 
 // Pneumatics
-pros::adi::Pneumatics middle_goal_mech('A', false);
-pros::adi::Pneumatics loader_mech('B', true);
+pros::adi::Pneumatics middle_goal_mech('A', true);
+pros::adi::Pneumatics loader_mech('B', false);
 
 // IMU + Rotation Sensors
-pros::Imu imu(7);
-pros::Rotation horizontal_sensor(5);
-pros::Rotation vertical_sensor(6);
+pros::Imu imu(16);
+pros::Rotation horizontal_sensor(17);
+pros::Rotation vertical_sensor(-15);
 
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
@@ -44,7 +45,7 @@ pros::Rotation vertical_sensor(6);
 lemlib::Drivetrain drivetrain(
 	&left_motors,
 	&right_motors,
-	14.25197,
+	14,
 	lemlib::Omniwheel::NEW_325,
 	450,
 	8
@@ -54,12 +55,12 @@ lemlib::Drivetrain drivetrain(
 lemlib::TrackingWheel horizontal_tracking_wheel(
 	&horizontal_sensor,
 	lemlib::Omniwheel::NEW_2,
-	-7.75
+	-6.375
 );
 lemlib::TrackingWheel vertical_tracking_wheel(
 	&vertical_sensor,
 	lemlib::Omniwheel::NEW_2,
-	-2.28346
+	1.75
 );
 
 // Lemlib Odometry Configuration
@@ -87,7 +88,7 @@ lemlib::OdomSensors sensors(
 
 // Lemlib PID Tuning
 lemlib::ControllerSettings lateral_controller(
-	12.5, // proportional gain (kP)
+	16.5, // proportional gain (kP)
 	0, // integral gain (kI)
 	40, // derivative gain (kD)
 	0, // anti windup
@@ -100,7 +101,7 @@ lemlib::ControllerSettings lateral_controller(
 
 // angular PID controller
 lemlib::ControllerSettings angular_controller(
-	5, // proportional gain (kP)
+	8, // proportional gain (kP)
     0, // integral gain (kI)
     40, // derivative gain (kD)
 	0, // anti windup
@@ -150,6 +151,7 @@ void initialize() {
     }
 
     chassis.calibrate();
+	pros::delay(2000);
     
 }
 
@@ -183,7 +185,14 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
-	chassis.turnToHeading(90, 2000);
+	chassis.setPose(0, 0, 0);
+	// bottom_intake_motor.move(127);
+	// chassis.moveToPoint(0, 28, 2000, {.maxSpeed=60});
+	// pros::delay(2000);
+	// bottom_intake_motor.move(0);
+	// chassis.turnToHeading(180, 500, {.maxSpeed=60});
+	// chassis.turnToHeading(0, 500, {.maxSpeed=60});
+	chassis.turnToHeading(90, 3000);
 }
 
 /**
@@ -199,19 +208,20 @@ void autonomous() {
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
+
+void showMovementTask() {
+    char buffer[32];
+    while (true) {
+        auto pose = chassis.getPose();
+        pros::lcd::print(0, "X: %.2f", pose.x);
+        pros::lcd::print(1, "Y: %.2f", pose.y);
+        pros::lcd::print(2, "Theta: %.2f", pose.theta);
+        pros::delay(50);
+    }
+}
+
 void opcontrol() {
-	pros::Task show_movement([] {
-		char buffer[32];
-		while (true) {
-			snprintf(buffer, sizeof(buffer), "X: %.2f", chassis.getPose().x);
-			pros::lcd::print(0, buffer);
-			snprintf(buffer, sizeof(buffer), "Y: %.2f", chassis.getPose().y);
-			pros::lcd::print(1, buffer);
-			snprintf(buffer, sizeof(buffer), "Theta: %.2f", chassis.getPose().theta);
-			pros::lcd::print(2, buffer);
-			pros::delay(50);
-		}  
-	});
+	static pros::Task show_movement(showMovementTask);
 
 	// autonomous();
 
@@ -224,13 +234,7 @@ void opcontrol() {
 
 	// loop forever
     while (true) {
-        // get left y and right x positions
-        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
-
-        // move the robot
-		// Gives more forward power in cost of turning speed
-        chassis.arcade(leftY, rightX, true, 0.25);
+        
 
 		// Autonomous Testing
 		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
@@ -271,19 +275,29 @@ void opcontrol() {
 			spin_bottom_intake = false;
 		}
 
+		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
+			autonomous();
+		}
+
+		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
+			// chassis.setPose(0, 0, 0);
+			// chassis.turnToHeading(90, 500);
+			autonomous();
+		}
+
 		// Setting the variable values
 		if (spin_top_intake) {
-			top_intake_motor.move_voltage(127);
+			top_intake_motor.move(127);
 		} else {
-			top_intake_motor.move_voltage(0);
+			top_intake_motor.move(0);
 		}
 
 		if (spin_bottom_intake) {
-			bottom_intake_motor.move_voltage(127);
+			bottom_intake_motor.move(127);
 		} else if (spin_bottom_intake_backward) {
-			bottom_intake_motor.move_voltage(-127);
+			bottom_intake_motor.move(-127);
 		} else {
-			bottom_intake_motor.move_voltage(0);
+			bottom_intake_motor.move(0);
 		}
 
 		if (middle_goal_mech_extended) {
@@ -297,6 +311,14 @@ void opcontrol() {
 		} else {
 			loader_mech.retract();
 		}
+
+		// get left y and right x positions
+        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+
+        // move the robot
+		// Gives more forward power in cost of turning speed
+        chassis.arcade(leftY, rightX, true, 0.25);
 
         // delay to save resources
         pros::delay(25);
