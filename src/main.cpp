@@ -10,6 +10,7 @@
 #include "lemlib/api.hpp"
 #include "pros/rotation.hpp"
 #include "pros/rtos.h"
+#include "pros/rtos.hpp"
 #include <cstddef>
 
 // Brain Devices
@@ -92,10 +93,10 @@ lemlib::ControllerSettings lateral_controller(
 	0, // integral gain (kI)
 	40, // derivative gain (kD)
 	0, // anti windup
-	0, // small error range, in inches
-	0, // small error range timeout, in milliseconds
-	0, // large error range, in inches
-	0, // large error range timeout, in milliseconds
+	1, // small error range, in inches
+	100, // small error range timeout, in milliseconds
+	1.5, // large error range, in inches
+	300, // large error range timeout, in milliseconds
 	0 // maximum acceleration (slew)
 );
 
@@ -105,10 +106,10 @@ lemlib::ControllerSettings angular_controller(
     0, // integral gain (kI)
     40, // derivative gain (kD)
 	0, // anti windup
-	0, // small error range, in degrees
-	0, // small error range timeout, in milliseconds
-	0, // large error range, in degrees
-	0, // large error range timeout, in milliseconds
+	1, // small error range, in degrees
+	100, // small error range timeout, in milliseconds
+	3, // large error range, in degrees
+	300, // large error range timeout, in milliseconds
 	0 // maximum acceleration (slew)
 );
 
@@ -185,14 +186,94 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
-	chassis.setPose(0, 0, 0);
+	// chassis.setPose(0, 0, 0);
 	// bottom_intake_motor.move(127);
 	// chassis.moveToPoint(0, 28, 2000, {.maxSpeed=60});
 	// pros::delay(2000);
 	// bottom_intake_motor.move(0);
 	// chassis.turnToHeading(180, 500, {.maxSpeed=60});
 	// chassis.turnToHeading(0, 500, {.maxSpeed=60});
-	chassis.turnToHeading(90, 3000);
+	// chassis.turnToHeading(90, 3000);
+
+	// Day 1 Testing. Able to pick up some blocks, but not all four
+	// bottom_intake_motor.move(127);
+	// chassis.moveToPoint(1, 23.25, 1000);
+	// chassis.turnToHeading(-31.06, 500, {.maxSpeed=127});
+	// chassis.moveToPose(-2.68, 31.41, -23.11, 7000, {.maxSpeed=40});
+	// pros::delay(2000);
+	// bottom_intake_motor.move(0);
+
+	// Auton Pathway 1:
+	// Starting Location
+	chassis.setPose(0, 0, 0);
+	// Moving Straight to aviod parking spot contact (Thetha Original:2.25)
+	// Also try: .95, 24.84, 0
+	chassis.moveToPose(0, 24.84, 0, 1000);
+	// Turning Left before the middle goal blocks
+	// chassis.moveToPose(0.5, 26.28, -27.56, 500);
+	// Coming Straight up to the middle goal blocks
+	chassis.moveToPose(-1.74, 30.51, -27.52, 2000, {.maxSpeed=127}); 
+	// Collecting the middle blocks
+	bottom_intake_motor.move(127);
+	chassis.moveToPose(-7.23, 40, -29.93, 2000, {.maxSpeed=60});
+	pros::delay(500);
+	bottom_intake_motor.move(0);
+	
+	// Turning + moving + scoring in the middle goal
+	chassis.moveToPose(-6.35, 41.46, -136.45, 3000);
+	bottom_intake_motor.move(127);
+	top_intake_motor.move(127);
+	pros::delay(1500);
+	bottom_intake_motor.move(0);
+	top_intake_motor.move(0);
+
+	// Collecting second set of blocks, traveling to the blocks
+	chassis.moveToPose(16.91, 38.32, -269.66, 3000);
+	// Right before the second set of blocks point
+	chassis.moveToPose(30.33, 42.12, -271.18, 1000);
+	// Collecting the second set of blocks
+	bottom_intake_motor.move(127);
+	chassis.moveToPose(43.14, 41.14, -269.26, 2000, {.maxSpeed=60});
+	pros::delay(500);
+	bottom_intake_motor.move(0);
+
+	// Going + Scoring on second block
+	// Could use 38.58, 44.42, -400.51 to turn it first
+	chassis.moveToPose(31.74, 52.03, -399, 2000);
+	bottom_intake_motor.move(-127);
+	pros::delay(1500);
+	bottom_intake_motor.move(0);
+
+	// Going to Loader for Blocks
+	// Optional: Going back from the goal 39.16, 43.5, -399.98
+	// Optional: Going back from the goal 40.22, 37.7, -570.64
+	// Changeable: Right before the goal 65.92, 12.76, 539.19 > (67.78, 12.31, -538.42)
+	chassis.moveToPose(67.78, 12.31, -538.42, 3000);
+	// Collect blocks from the loader
+	loader_mech.extend();
+	bottom_intake_motor.move(127);
+	chassis.moveToPoint(67.32, 4.87, 2000); // Actual theta: -534.61
+	pros::delay(2500);
+	bottom_intake_motor.move(0);
+	chassis.moveToPoint(67.32, 12.31, 2000);
+	loader_mech.retract();
+
+	// Scoring Loader Blocks
+	chassis.moveToPose(69.7, 25.62, -537.42, 2000);
+	bottom_intake_motor.move(127);
+	top_intake_motor.move(127);
+	pros::delay(4000);
+	bottom_intake_motor.move(0);
+	top_intake_motor.move(0);
+
+	// Parking the Robot, moving right before park
+	chassis.moveToPose(32.60, 3.18, -445.74, 2500);
+	bottom_intake_motor.move(127);
+	top_intake_motor.move(127);
+	chassis.moveToPoint(12, 3.18, 5000);
+	pros::delay(2000);
+	bottom_intake_motor.move(0);
+	top_intake_motor.move(0);
 }
 
 /**
