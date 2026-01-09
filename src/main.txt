@@ -12,3 +12,24 @@ void opcontrol() {
         pros::delay(50);
     }
 }
+
+
+
+// Collecting First loader blocks
+	bottom_intake_motor.move(127);
+	loader_mech.extend();
+	// Rams into first loader
+	chassis.moveToPose(x, y, angle, 2000);
+	pros::delay(2000);
+	bottom_intake_motor.move(0);
+	
+	// Going back to retract loader mech
+	chassis.moveToPoint(x, y, 2000);
+	loader_mech.retract();
+
+// Scoring Octoballs
+    top_intake_motor.move(127);
+	bottom_intake_motor.move(127);
+	pros::delay(3500);
+	top_intake_motor.move(0);
+	bottom_intake_motor.move(0);
