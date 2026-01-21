@@ -1,0 +1,91 @@
+// ---------------------------------------------------------------------
+	// Part 2:
+	// // Right before the second loader
+	// chassis.moveToPoint(102, 52.46, 1000); // theta: -90
+
+	// // Collecting blocks from the loader ------------------------
+	// bottom_intake_motor.move(127);
+	// loader_mech.extend();
+
+	// chassis.moveToPose(-110.33, 52.52, -90, 2000);
+	// bottom_intake_motor.move(0);
+	
+	// // Going back to retract loader mech
+	// chassis.moveToPose(-84.34, 52.8, -90, 2000); // Theta: -88.2
+	// loader_mech.retract();
+
+	// // Scoring blocks
+	// scoreLoaderBlocks();
+
+	// // Getting ready to move to the third Loader
+	// chassis.moveToPoint(-93.84, 55.76, 4000); // theta -180
+	// chassis.turnToHeading(-180, 500);
+
+	// // Moving + Turning to face loader
+	// chassis.moveToPoint(-97.54, -44.79, 4000); // theta -177.7
+	// chassis.turnToHeading(-90, 500); // -98.06, -49.13, -88.29
+
+	// // Ramming into third loader to collect blocks --------------------------------
+	// bottom_intake_motor.move(127);
+	// loader_mech.extend();
+	// // Rams into third loader
+	// chassis.moveToPose(-115.32, -48.37, -90, 2000); // theta: -85.98
+	// pros::delay(2000);
+	// bottom_intake_motor.move(0);
+	
+	// // Going back to retract loader mech
+	// chassis.moveToPoint(-103.51, -48.98, 2000);
+	// loader_mech.retract();
+
+	// // Part 3:
+	// // Going to the second long goal
+	// // Turning left
+	// chassis.turnToHeading(-180, 500); // -103.87, -47.83, -176.84
+	// // moving straight
+	// chassis.moveToPoint(-105.14, -59.79, 1000); // theta -178.82
+	// // turning left
+	// chassis.turnToHeading(-270, 500); // -106.91, -61.64, -265.51
+	// // Going straight to the other side
+	// chassis.moveToPoint(-7.57, -68.92, 4000); // theta: -265.8
+	// // Turning left
+	// chassis.turnToHeading(0, 500); // -5.76, -57.89, -353.38
+	// // moving forward
+	// chassis.moveToPoint(-5.76, -57.89, 1000);
+	// // Turning right ^ for x and y coordinates
+	// chassis.turnToHeading(90, 500);
+
+	// // Going to score the blocks in the second long goal
+	// chassis.moveToPose(-20.85, -54.58, 90, 1000); // theta: -264.7
+
+	// // Scoring the blocks
+	// scoreLoaderBlocks();
+
+	// // Right before loader
+	// chassis.moveToPoint(0.73, -55.79, 1000); // theta -264.69
+
+	// // Ramming into fourth loader to collect blocks --------------------
+	// bottom_intake_motor.move(127);
+	// loader_mech.extend();
+	// // Rams into fourth loader
+	// chassis.moveToPose(4.72, -56.52, 90, 2000); // theta: -264.65
+	// pros::delay(2000);
+	// bottom_intake_motor.move(0);
+	
+	// // Going back to retract loader mech
+	// chassis.moveToPoint(-20.85, -54.58, 2000); // Could be right before loader as well
+	// loader_mech.retract();
+
+	// // Going to score the blocks in the second long goal for the second time
+	// chassis.moveToPose(-20.85, -54.58, 90, 1000); // theta: -264.7
+
+	// // Scoring the blocks
+	// scoreLoaderBlocks();
+
+	
+	// // Traveling to Park the Robot, take the robot to location right before park
+	// chassis.moveToPoint(-4.55, -57.35, 1000); // theta -263.22
+	// chassis.turnToHeading(0, 500); // -4.03, -58.78, -353.62
+	// chassis.moveToPoint(-1.11, -35.99, 1000); // theta -353.47
+	// chassis.turnToHeading(90, 500); // -1.12, -36.92, -262.53
+	// chassis.moveToPoint(10.61, -36.8, 1000); // theta -264.03
+	// chassis.turnToHeading(0, 500); // 12.1, -38.84, -352.52

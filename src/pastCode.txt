@@ -81,3 +81,25 @@
 	// pros::delay(2000);
 	// bottom_intake_motor.move(0);
 	// top_intake_motor.move(0);
+
+
+
+// Random Code
+
+
+	// // Day 1 Testing. Able to pick up some blocks, but not all four
+	// bottom_intake_motor.move(127);
+	// chassis.moveToPoint(1, 23.25, 1000);
+	// chassis.turnToHeading(-31.06, 500, {.maxSpeed=127});
+	// chassis.moveToPose(-2.68, 31.41, -23.11, 7000, {.maxSpeed=40});
+	// pros::delay(2000);
+	// bottom_intake_motor.move(0);
+
+	chassis.setPose(0, 0, 0);
+	bottom_intake_motor.move(127);
+	chassis.moveToPoint(0, 28, 2000, {.maxSpeed=60});
+	pros::delay(2000);
+	bottom_intake_motor.move(0);
+	chassis.turnToHeading(180, 500, {.maxSpeed=60});
+	chassis.turnToHeading(0, 500, {.maxSpeed=60});
+	chassis.turnToHeading(90, 3000);

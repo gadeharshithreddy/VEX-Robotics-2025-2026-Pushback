@@ -1,0 +1,35 @@
+/// FUTURE TESTING CODE --- FUTURE TESTING CODE ---- FUTURE TESTING CODE
+	// Collecting Blocks from the second loader
+	chassis.moveToPoint(-98, chassis.getPose().y, 2000, {.maxSpeed=80});
+	bottom_intake_motor.move(127);
+	loader_mech.extend();
+	chassis.moveToPoint(-115, chassis.getPose().y, 4000, {.maxSpeed=80});
+	pros::delay(5000);
+	bottom_intake_motor.move(0);
+
+	// Going back to long goal for scoring
+	chassis.moveToPoint(-78, 51, 2000, {.forwards=false, .maxSpeed=100});
+	scoreLoaderBlocks();
+
+    // Moving to third loader
+    chassis.moveToPoint(-96, 51, 2000);
+    chassis.turnToHeading(-180, 2000);
+
+
+/// Parking
+	// // Parking // Need to Figure it out.
+	// chassis.arcade(-0, 0);
+	// pros::delay(1000);
+	// chassis.arcade(0, 0);
+	// bottom_intake_motor.move(127);
+	// top_intake_motor.move(127);
+	// // loader_mech.extend();
+	// // chassis.moveToPoint(17, -16.76, 5000, {.maxSpeed=70}); // 15.97, -16.78, -350.94
+	// pros::delay(1000);	
+	// chassis.arcade(127, 0);
+	// // chassis.turnToHeading(0, 500);
+	// pros::delay(2000);
+	// chassis.arcade(0, 0);
+	// bottom_intake_motor.move(0);
+	// top_intake_motor.move(0);
+	// loader_mech.retract();

@@ -3,9 +3,11 @@
 #include "lemlib/chassis/trackingWheel.hpp"
 #include "pros/abstract_motor.hpp"
 #include "pros/adi.hpp"
+#include "pros/device.hpp"
 #include "pros/imu.hpp"
 #include "pros/misc.h"
 #include "pros/motor_group.hpp"
+#include "pros/motors.h"
 #include "pros/optical.hpp"
 #include "lemlib/api.hpp"
 #include "pros/rotation.hpp"
@@ -20,7 +22,7 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 // Drivetrain Motors
 pros::MotorGroup left_motors({-11, -12, -13}, pros::MotorGearset::blue);
-pros::MotorGroup right_motors({20, 10, 9}, pros::MotorGearset::blue);
+pros::MotorGroup right_motors({18, 10, 9}, pros::MotorGearset::blue);
 
 // Intake Motors
 pros::Motor top_intake_motor(8);
@@ -35,8 +37,8 @@ pros::adi::Pneumatics loader_mech('B', false);
 
 // IMU + Rotation Sensors
 pros::Imu imu(16);
-pros::Rotation horizontal_sensor(17);
-pros::Rotation vertical_sensor(-15);
+pros::Rotation horizontal_sensor(15);
+pros::Rotation vertical_sensor(-17);
 
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
@@ -46,7 +48,7 @@ pros::Rotation vertical_sensor(-15);
 lemlib::Drivetrain drivetrain(
 	&left_motors,
 	&right_motors,
-	14,
+	14.1,
 	lemlib::Omniwheel::NEW_325,
 	450,
 	8
@@ -56,7 +58,7 @@ lemlib::Drivetrain drivetrain(
 lemlib::TrackingWheel horizontal_tracking_wheel(
 	&horizontal_sensor,
 	lemlib::Omniwheel::NEW_2,
-	-6.375
+	2.375
 );
 lemlib::TrackingWheel vertical_tracking_wheel(
 	&vertical_sensor,
@@ -89,28 +91,28 @@ lemlib::OdomSensors sensors(
 
 // Lemlib PID Tuning
 lemlib::ControllerSettings lateral_controller(
-	16.5, // proportional gain (kP)
+	11, // proportional gain (kP)
 	0, // integral gain (kI)
-	40, // derivative gain (kD)
+	20, // derivative gain (kD)
 	0, // anti windup
 	1, // small error range, in inches
 	100, // small error range timeout, in milliseconds
-	1.5, // large error range, in inches
-	300, // large error range timeout, in milliseconds
-	0 // maximum acceleration (slew)
+	2, // large error range, in inches
+	200, // large error range timeout, in milliseconds
+	10 // maximum acceleration (slew)
 );
 
 // angular PID controller
 lemlib::ControllerSettings angular_controller(
-	8, // proportional gain (kP)
+	5, // proportional gain (kP)
     0, // integral gain (kI)
-    40, // derivative gain (kD)
+    35, // derivative gain (kD)
 	0, // anti windup
 	1, // small error range, in degrees
 	100, // small error range timeout, in milliseconds
-	3, // large error range, in degrees
-	300, // large error range timeout, in milliseconds
-	0 // maximum acceleration (slew)
+	2, // large error range, in degrees
+	200, // large error range timeout, in milliseconds
+	17 // maximum acceleration (slew)
 );
 
 // Controller Input Changing
@@ -145,15 +147,11 @@ lemlib::Chassis chassis(
  */
 void initialize() {
 	pros::lcd::initialize();
-
-    imu.reset();
-    while (imu.is_calibrating()) {
+    chassis.calibrate();
+	while (imu.is_calibrating()) {
         pros::delay(10);
     }
-
-    chassis.calibrate();
 	pros::delay(2000);
-    
 }
 
 /**
@@ -195,157 +193,40 @@ void scoreLoaderBlocks() {
 }
 
 void autonomous() {
-	// chassis.setPose(0, 0, 0);
-	// bottom_intake_motor.move(127);
-	// chassis.moveToPoint(0, 28, 2000, {.maxSpeed=60});
-	// pros::delay(2000);
-	// bottom_intake_motor.move(0);
-	// chassis.turnToHeading(180, 500, {.maxSpeed=60});
-	// chassis.turnToHeading(0, 500, {.maxSpeed=60});
-	// chassis.turnToHeading(90, 3000);
-
-	// Day 1 Testing. Able to pick up some blocks, but not all four
-	// bottom_intake_motor.move(127);
-	// chassis.moveToPoint(1, 23.25, 1000);
-	// chassis.turnToHeading(-31.06, 500, {.maxSpeed=127});
-	// chassis.moveToPose(-2.68, 31.41, -23.11, 7000, {.maxSpeed=40});
-	// pros::delay(2000);
-	// bottom_intake_motor.move(0);
-
-	// Option 2 Code:
+	// // Option 2 Code:
 	chassis.setPose(0, 0, 0);
 	// Part 1:
 	// Going to first loader:
-	// Could try .25 for x, 49.85 for x, theta: -0.46, moving forward for first loader
-	chassis.moveToPoint(0, 50, 2000);
-	// Turns to face first loader
-	chassis.turnToHeading(90, 500); // 2.03, 52.07, 90.14
+	chassis.moveToPoint(0, 51, 3000, {.maxSpeed=90});
+	chassis.turnToHeading(92, 1500, {.maxSpeed=80}); // 2.03, 52.07, 90.14 // SHOULD BE 90
 	
-	// Collecting First loader blocks ----------------
+	// // Collecting First loader blocks ----------------
 	bottom_intake_motor.move(127);
+	pros::delay(200);
 	loader_mech.extend();
 	// Rams into first loader
-	chassis.moveToPose(9.25, 51.73, 90, 2000);
-	pros::delay(2000);
+	chassis.moveToPoint(15, chassis.getPose().y, 4000, {.maxSpeed=80});
+	pros::delay(5000);
 	bottom_intake_motor.move(0);
-	
-	// Going back to retract loader mech
-	chassis.moveToPoint(0, 50, 2000);
+	// // Going back to retract loader mech
+	chassis.moveToPoint(0, chassis.getPose().y, 2000, {.forwards=false});
 	loader_mech.retract();
 
-	// Going to First Long Goal
-	chassis.turnToHeading(0, 500);
-	chassis.moveToPoint(1.4, 65, 500); // try 59.8 for y
+	// // Going to First Long Goal
+	chassis.turnToHeading(-70, 1000);
+	chassis.moveToPoint(-18.28, 63, 2000, {.maxSpeed=80});
 	chassis.turnToHeading(-90, 500);
-	// Moving straight
-	chassis.moveToPoint(-92.5, 67, 4000); // -92 heading
+	chassis.moveToPoint(-96, chassis.getPose().y, 3000, {.maxSpeed=100});
 
-	// Aligning with long goal
-	chassis.moveToPose(-84.76, 51.67, -90, 2000);
-
-	// Scoring blocks
+	// LATEST TESTING CODE +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	// Align against the first long goal
+	chassis.turnToHeading(-180, 1000);
+	chassis.moveToPoint(chassis.getPose().x, 50, 1000);
+	chassis.turnToHeading(-90, 1000);
+	chassis.moveToPoint(-78, 51, 2000, {.forwards=false, .maxSpeed=100});
+	// CAN REPLACE WITH THIS 
+	//chassis.moveToPose(-78, 51, -90, 2000, {.forwards=false, .maxSpeed=100});
 	scoreLoaderBlocks();
-	
-	// // Part 2:
-	// // Right before the second loader
-	// chassis.moveToPoint(102, 52.46, 1000); // theta: -90
-
-	// // Collecting blocks from the loader ------------------------
-	// bottom_intake_motor.move(127);
-	// loader_mech.extend();
-
-	// chassis.moveToPose(-110.33, 52.52, -90, 2000);
-	// bottom_intake_motor.move(0);
-	
-	// // Going back to retract loader mech
-	// chassis.moveToPose(-84.34, 52.8, -90, 2000); // Theta: -88.2
-	// loader_mech.retract();
-
-	// // Scoring blocks
-	// scoreLoaderBlocks();
-
-	// // Getting ready to move to the third Loader
-	// chassis.moveToPoint(-93.84, 55.76, 4000); // theta -180
-	// chassis.turnToHeading(-180, 500);
-
-	// // Moving + Turning to face loader
-	// chassis.moveToPoint(-97.54, -44.79, 4000); // theta -177.7
-	// chassis.turnToHeading(-90, 500); // -98.06, -49.13, -88.29
-
-	// // Ramming into third loader to collect blocks --------------------------------
-	// bottom_intake_motor.move(127);
-	// loader_mech.extend();
-	// // Rams into third loader
-	// chassis.moveToPose(-115.32, -48.37, -90, 2000); // theta: -85.98
-	// pros::delay(2000);
-	// bottom_intake_motor.move(0);
-	
-	// // Going back to retract loader mech
-	// chassis.moveToPoint(-103.51, -48.98, 2000);
-	// loader_mech.retract();
-
-	// // Part 3:
-	// // Going to the second long goal
-	// // Turning left
-	// chassis.turnToHeading(-180, 500); // -103.87, -47.83, -176.84
-	// // moving straight
-	// chassis.moveToPoint(-105.14, -59.79, 1000); // theta -178.82
-	// // turning left
-	// chassis.turnToHeading(-270, 500); // -106.91, -61.64, -265.51
-	// // Going straight to the other side
-	// chassis.moveToPoint(-7.57, -68.92, 4000); // theta: -265.8
-	// // Turning left
-	// chassis.turnToHeading(0, 500); // -5.76, -57.89, -353.38
-	// // moving forward
-	// chassis.moveToPoint(-5.76, -57.89, 1000);
-	// // Turning right ^ for x and y coordinates
-	// chassis.turnToHeading(90, 500);
-
-	// // Going to score the blocks in the second long goal
-	// chassis.moveToPose(-20.85, -54.58, 90, 1000); // theta: -264.7
-
-	// // Scoring the blocks
-	// scoreLoaderBlocks();
-
-	// // Right before loader
-	// chassis.moveToPoint(0.73, -55.79, 1000); // theta -264.69
-
-	// // Ramming into fourth loader to collect blocks --------------------
-	// bottom_intake_motor.move(127);
-	// loader_mech.extend();
-	// // Rams into fourth loader
-	// chassis.moveToPose(4.72, -56.52, 90, 2000); // theta: -264.65
-	// pros::delay(2000);
-	// bottom_intake_motor.move(0);
-	
-	// // Going back to retract loader mech
-	// chassis.moveToPoint(-20.85, -54.58, 2000); // Could be right before loader as well
-	// loader_mech.retract();
-
-	// // Going to score the blocks in the second long goal for the second time
-	// chassis.moveToPose(-20.85, -54.58, 90, 1000); // theta: -264.7
-
-	// // Scoring the blocks
-	// scoreLoaderBlocks();
-
-	
-	// // Traveling to Park the Robot, take the robot to location right before park
-	// chassis.moveToPoint(-4.55, -57.35, 1000); // theta -263.22
-	// chassis.turnToHeading(0, 500); // -4.03, -58.78, -353.62
-	// chassis.moveToPoint(-1.11, -35.99, 1000); // theta -353.47
-	// chassis.turnToHeading(90, 500); // -1.12, -36.92, -262.53
-	// chassis.moveToPoint(10.61, -36.8, 1000); // theta -264.03
-	// chassis.turnToHeading(0, 500); // 12.1, -38.84, -352.52
-
-	// // Parking // Need to Figure it out.
-	// bottom_intake_motor.move(127);
-	// top_intake_motor.move(127);
-	// chassis.moveToPoint(17, -16.76, 5000, {.maxSpeed=70}); // 15.97, -16.78, -350.94
-	// chassis.turnToHeading(0, 500);
-	// pros::delay(2000);
-	// bottom_intake_motor.move(0);
-	// top_intake_motor.move(0);
-
 }
 
 /**
@@ -402,35 +283,36 @@ void opcontrol() {
 
 
 		// Variable Control
-		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
-			// To spin the bottom intake
-			spin_bottom_intake = !spin_bottom_intake;
-		}
+		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
+		// 	// To spin the bottom intake
+		// 	spin_bottom_intake = !spin_bottom_intake;
+		// }
 
-		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
-			// To spin both at the same time
-			spin_top_intake = !spin_top_intake;
-			spin_bottom_intake = spin_top_intake;
-		}
+		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
+		// 	// To spin both at the same time
+		// 	spin_top_intake = !spin_top_intake;
+		// 	spin_bottom_intake = spin_top_intake;
+		// }
 
-		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
-			// Loader Mechanism
-			loader_mech_extended = !loader_mech_extended;
-		}
+		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
+		// 	// Loader Mechanism
+		// 	loader_mech_extended = !loader_mech_extended;
+		// }
 
-		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
-			// Middle Goal Mechanism
-			middle_goal_mech_extended = !middle_goal_mech_extended;
-		}
+		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
+		// 	// Middle Goal Mechanism
+		// 	middle_goal_mech_extended = !middle_goal_mech_extended;
+		// }
 
-		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
-			spin_bottom_intake_backward = !spin_bottom_intake_backward;
-			spin_bottom_intake = false;
-		}
+		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
+		// 	spin_bottom_intake_backward = !spin_bottom_intake_backward;
+		// 	spin_bottom_intake = false;
+		// }
 
-		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
-			autonomous();
-		}
+		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
+		// 	chassis.setPose(0, 0, 0);
+		// 	chassis.turnToHeading(90, 5000);
+		// }
 
 		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
 			// chassis.setPose(0, 0, 0);
@@ -439,19 +321,19 @@ void opcontrol() {
 		}
 
 		// Setting the variable values
-		if (spin_top_intake) {
-			top_intake_motor.move(127);
-		} else {
-			top_intake_motor.move(0);
-		}
+		// if (spin_top_intake) {
+		// 	top_intake_motor.move(127);
+		// } else {
+		// 	top_intake_motor.move(0);
+		// }
 
-		if (spin_bottom_intake) {
-			bottom_intake_motor.move(127);
-		} else if (spin_bottom_intake_backward) {
-			bottom_intake_motor.move(-127);
-		} else {
-			bottom_intake_motor.move(0);
-		}
+		// if (spin_bottom_intake) {
+		// 	bottom_intake_motor.move(127);
+		// } else if (spin_bottom_intake_backward) {
+		// 	bottom_intake_motor.move(-127);
+		// } else {
+		// 	bottom_intake_motor.move(0);
+		// }
 
 		if (middle_goal_mech_extended) {
 			middle_goal_mech.extend();
@@ -471,9 +353,9 @@ void opcontrol() {
 
         // move the robot
 		// Gives more forward power in cost of turning speed
-        chassis.arcade(leftY, rightX, true, 0.25);
+        chassis.arcade(leftY, rightX, true, 0.75);
 
-        // delay to save resources
+        // delay to save resources 
         pros::delay(25);
     }
 }
