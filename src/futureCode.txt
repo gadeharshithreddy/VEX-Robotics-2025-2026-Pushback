@@ -1,35 +1,58 @@
 /// FUTURE TESTING CODE --- FUTURE TESTING CODE ---- FUTURE TESTING CODE
-	// Collecting Blocks from the second loader
-	chassis.moveToPoint(-98, chassis.getPose().y, 2000, {.maxSpeed=80});
-	bottom_intake_motor.move(127);
-	loader_mech.extend();
-	chassis.moveToPoint(-115, chassis.getPose().y, 4000, {.maxSpeed=80});
-	pros::delay(5000);
-	bottom_intake_motor.move(0);
+	
 
-	// Going back to long goal for scoring
-	chassis.moveToPoint(-78, 51, 2000, {.forwards=false, .maxSpeed=100});
-	scoreLoaderBlocks();
+	// Moving to third loader
+	chassis.moveToPoint(-96, 51, 2000);
+	chassis.turnToHeading(-180, 2000);
 
-    // Moving to third loader
-    chassis.moveToPoint(-96, 51, 2000);
-    chassis.turnToHeading(-180, 2000);
 
+/// Traveling to the third loader + unloading
+chassis.moveToPoint(chassis.getPose().x, -51, 4000);
+chassis.turnToHeading(-90, 1000);
+
+bottom_intake_motor.move(127);
+loader_mech.extend();
+chassis.moveToPoint(-115, chassis.getPose().y, 4000);
+pros::delay(5000);
+bottom_intake_motor.move(0);
+chassis.moveToPoint(-96, chassis.getPose().y, 2000);
+loader_mech.retract();
+
+/// Traveling to the second long goal
+chassis.turnToHeading(160, 2000);
+chassis.moveToPoint(-78,-63, 2000);
+chassis.turnToHeading(90, 1000);
+chassis.moveToPoint(0, chassis.getPose().y, 4000);
+
+/// Aligning against second long goal + scoring
+chassis.moveToPose(-22, -54.58, 90, 2000, {.forwards=false});
+scoreLoaderBlocks();
+
+/// Getting blocks from the fourth loader
+chassis.moveToPoint(0, chassis.getPose().y, 2000);
+
+bottom_intake_motor.move(127);
+loader_mech.extend();
+chassis.moveToPoint(15, chassis.getPose().y, 4000);
+pros::delay(5000);
+bottom_intake_motor.move(0);
+chassis.moveToPoint(0, chassis.getPose().y, 2000);
+loader_mech.retract();
+
+// Scoring blocks from the fourth loader
+chassis.moveToPoint(-22, chassis.getPose().y, 2000);
+scoreLoaderBlocks();
+
+// Going to parking spot
+chassis.moveToPose(-5, 0, 90, 3000);
 
 /// Parking
-	// // Parking // Need to Figure it out.
-	// chassis.arcade(-0, 0);
-	// pros::delay(1000);
-	// chassis.arcade(0, 0);
-	// bottom_intake_motor.move(127);
-	// top_intake_motor.move(127);
-	// // loader_mech.extend();
-	// // chassis.moveToPoint(17, -16.76, 5000, {.maxSpeed=70}); // 15.97, -16.78, -350.94
-	// pros::delay(1000);	
-	// chassis.arcade(127, 0);
-	// // chassis.turnToHeading(0, 500);
-	// pros::delay(2000);
-	// chassis.arcade(0, 0);
-	// bottom_intake_motor.move(0);
-	// top_intake_motor.move(0);
-	// loader_mech.retract();
+// // Parking // Need to Figure it out.
+// bottom_intake_motor.move(127);
+// top_intake_motor.move(127);
+// pros::delay(1000);	
+// chassis.arcade(127, 0);
+// pros::delay(2000);
+// chassis.arcade(0, 0);
+// bottom_intake_motor.move(0);
+// top_intake_motor.move(0);

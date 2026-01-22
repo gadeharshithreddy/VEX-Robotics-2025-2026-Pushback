@@ -220,13 +220,25 @@ void autonomous() {
 
 	// LATEST TESTING CODE +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	// Align against the first long goal
-	chassis.turnToHeading(-180, 1000);
-	chassis.moveToPoint(chassis.getPose().x, 50, 1000);
-	chassis.turnToHeading(-90, 1000);
-	chassis.moveToPoint(-78, 51, 2000, {.forwards=false, .maxSpeed=100});
+	// chassis.turnToHeading(-180, 1000);
+	// chassis.moveToPoint(chassis.getPose().x, 50, 1000);
+	// chassis.turnToHeading(-90, 1000);
+	// chassis.moveToPoint(-78, 51, 2000, {.forwards=false, .maxSpeed=100});
 	// CAN REPLACE WITH THIS 
-	//chassis.moveToPose(-78, 51, -90, 2000, {.forwards=false, .maxSpeed=100});
+	chassis.moveToPose(-78, 51, -90, 2000, {.forwards=false, .maxSpeed=100});
 	scoreLoaderBlocks();
+
+	// // Collecting Blocks from the second loader
+	// chassis.moveToPoint(-98, chassis.getPose().y, 2000, {.maxSpeed=80});
+	// bottom_intake_motor.move(127);
+	// loader_mech.extend();
+	// chassis.moveToPoint(-115, chassis.getPose().y, 4000, {.maxSpeed=80});
+	// pros::delay(5000);
+	// bottom_intake_motor.move(0);
+
+	// // Going back to long goal for scoring
+	// chassis.moveToPoint(-78, 51, 2000, {.forwards=false, .maxSpeed=100});
+	// scoreLoaderBlocks();
 }
 
 /**
