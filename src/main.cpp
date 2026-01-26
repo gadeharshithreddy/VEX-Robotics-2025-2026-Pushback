@@ -91,14 +91,14 @@ lemlib::OdomSensors sensors(
 
 // Lemlib PID Tuning
 lemlib::ControllerSettings lateral_controller(
-	11, // proportional gain (kP)
+	12, // proportional gain (kP)
 	0, // integral gain (kI)
 	20, // derivative gain (kD)
 	0, // anti windup
-	1, // small error range, in inches
-	100, // small error range timeout, in milliseconds
-	2, // large error range, in inches
-	200, // large error range timeout, in milliseconds
+	0, // small error range, in inches
+	0, // small error range timeout, in milliseconds
+	0, // large error range, in inches
+	0, // large error range timeout, in milliseconds
 	10 // maximum acceleration (slew)
 );
 
@@ -108,10 +108,10 @@ lemlib::ControllerSettings angular_controller(
     0, // integral gain (kI)
     35, // derivative gain (kD)
 	0, // anti windup
-	1, // small error range, in degrees
-	100, // small error range timeout, in milliseconds
-	2, // large error range, in degrees
-	200, // large error range timeout, in milliseconds
+	0, // small error range, in degrees
+	0, // small error range timeout, in milliseconds
+	0, // large error range, in degrees
+	0, // large error range timeout, in milliseconds
 	17 // maximum acceleration (slew)
 );
 
@@ -228,17 +228,36 @@ void autonomous() {
 	chassis.moveToPose(-78, 51, -90, 2000, {.forwards=false, .maxSpeed=100});
 	scoreLoaderBlocks();
 
-	// // Collecting Blocks from the second loader
-	// chassis.moveToPoint(-98, chassis.getPose().y, 2000, {.maxSpeed=80});
-	// bottom_intake_motor.move(127);
-	// loader_mech.extend();
-	// chassis.moveToPoint(-115, chassis.getPose().y, 4000, {.maxSpeed=80});
-	// pros::delay(5000);
-	// bottom_intake_motor.move(0);
+	// Collecting Blocks from the second loader
+	chassis.moveToPoint(-98, chassis.getPose().y, 2000, {.maxSpeed=80});
+	bottom_intake_motor.move(127);
+	loader_mech.extend();
+	chassis.moveToPoint(-115, chassis.getPose().y, 4000, {.maxSpeed=80});
+	pros::delay(5000);
+	bottom_intake_motor.move(0);
 
 	// // Going back to long goal for scoring
-	// chassis.moveToPoint(-78, 51, 2000, {.forwards=false, .maxSpeed=100});
-	// scoreLoaderBlocks();
+	chassis.moveToPoint(-78, 51, 2000, {.forwards=false, .maxSpeed=100});
+	scoreLoaderBlocks();
+
+	// // Going to park
+	// chassis.moveToPoint(-98, chassis.getPose().y, 1500);
+	// chassis.turnToHeading(-180, 1000);
+	// chassis.moveToPoint(-78, 17.5, 2000);
+	// chassis.turnToHeading(90, 1000);
+	// chassis.moveToPoint(-20, 17.5, 2000);
+	// chassis.moveToPose(2, 0, 90, 3000);
+
+	/// Parking
+	// // Parking // Need to Figure it out.
+	// bottom_intake_motor.move(127);
+	// top_intake_motor.move(127);
+	// pros::delay(1000);	
+	// chassis.arcade(127, 0);
+	// pros::delay(2000);
+	// chassis.arcade(0, 0);
+	// bottom_intake_motor.move(0);
+	// top_intake_motor.move(0);
 }
 
 /**
@@ -283,15 +302,15 @@ void opcontrol() {
         
 
 		// Autonomous Testing
-		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
-		// 	chassis.setPose(0, 0, 0);
-		// 	chassis.moveToPoint(0, 24, 5000);
-		// }
+		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
+			chassis.setPose(0, 0, 0);
+			chassis.moveToPose(24, 50, 90, 5000);
+		}
 		
-		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
-		// 	chassis.setPose(0, 0, 0);
-		// 	chassis.turnToHeading(90, 2000);
-		// }
+		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
+			chassis.setPose(0, 0, 0);
+			chassis.turnToHeading(90, 2000);
+		}
 
 
 		// Variable Control

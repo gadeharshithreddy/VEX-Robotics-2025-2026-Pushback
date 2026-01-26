@@ -6,17 +6,17 @@
 	chassis.turnToHeading(-180, 2000);
 
 
-/// Traveling to the third loader + unloading
-chassis.moveToPoint(chassis.getPose().x, -51, 4000);
-chassis.turnToHeading(-90, 1000);
+	/// Traveling to the third loader + unloading
+	chassis.moveToPoint(chassis.getPose().x, -51, 4000);
+	chassis.turnToHeading(-90, 1000);
 
-bottom_intake_motor.move(127);
-loader_mech.extend();
-chassis.moveToPoint(-115, chassis.getPose().y, 4000);
-pros::delay(5000);
-bottom_intake_motor.move(0);
-chassis.moveToPoint(-96, chassis.getPose().y, 2000);
-loader_mech.retract();
+	bottom_intake_motor.move(127);
+	loader_mech.extend();
+	chassis.moveToPoint(-115, chassis.getPose().y, 4000);
+	pros::delay(5000);
+	bottom_intake_motor.move(0);
+	chassis.moveToPoint(-96, chassis.getPose().y, 2000);
+	loader_mech.retract();
 
 /// Traveling to the second long goal
 chassis.turnToHeading(160, 2000);
