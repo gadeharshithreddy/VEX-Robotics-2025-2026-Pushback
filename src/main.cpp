@@ -302,69 +302,64 @@ void opcontrol() {
         
 
 		// Autonomous Testing
-		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
-			chassis.setPose(0, 0, 0);
-			chassis.moveToPose(24, 50, 90, 5000);
-		}
+		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
+		// 	chassis.setPose(0, 0, 0);
+		// 	chassis.moveToPose(24, 50, 90, 5000);
+		// }
 		
-		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
-			chassis.setPose(0, 0, 0);
-			chassis.turnToHeading(90, 2000);
-		}
+		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
+		// 	chassis.setPose(0, 0, 0);
+		// 	chassis.turnToHeading(90, 2000);
+		// }
 
 
 		// Variable Control
-		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
-		// 	// To spin the bottom intake
-		// 	spin_bottom_intake = !spin_bottom_intake;
-		// }
-
-		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
-		// 	// To spin both at the same time
-		// 	spin_top_intake = !spin_top_intake;
-		// 	spin_bottom_intake = spin_top_intake;
-		// }
-
-		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
-		// 	// Loader Mechanism
-		// 	loader_mech_extended = !loader_mech_extended;
-		// }
-
-		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
-		// 	// Middle Goal Mechanism
-		// 	middle_goal_mech_extended = !middle_goal_mech_extended;
-		// }
-
-		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
-		// 	spin_bottom_intake_backward = !spin_bottom_intake_backward;
-		// 	spin_bottom_intake = false;
-		// }
-
-		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
-		// 	chassis.setPose(0, 0, 0);
-		// 	chassis.turnToHeading(90, 5000);
-		// }
-
-		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
-			// chassis.setPose(0, 0, 0);
-			// chassis.turnToHeading(90, 500);
-			autonomous();
+		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
+			// To spin the bottom intake
+			spin_bottom_intake = !spin_bottom_intake;
 		}
 
-		// Setting the variable values
-		// if (spin_top_intake) {
-		// 	top_intake_motor.move(127);
-		// } else {
-		// 	top_intake_motor.move(0);
+		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
+			// To spin both at the same time
+			spin_top_intake = !spin_top_intake;
+			spin_bottom_intake = spin_top_intake;
+		}
+
+		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
+			// Loader Mechanism
+			loader_mech_extended = !loader_mech_extended;
+		}
+
+		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
+			// Middle Goal Mechanism
+			middle_goal_mech_extended = !middle_goal_mech_extended;
+		}
+
+		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
+			spin_bottom_intake_backward = !spin_bottom_intake_backward;
+			spin_bottom_intake = false;
+		}
+
+		// if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
+		// 	// chassis.setPose(0, 0, 0);
+		// 	// chassis.turnToHeading(90, 500);
+		// 	autonomous();
 		// }
 
-		// if (spin_bottom_intake) {
-		// 	bottom_intake_motor.move(127);
-		// } else if (spin_bottom_intake_backward) {
-		// 	bottom_intake_motor.move(-127);
-		// } else {
-		// 	bottom_intake_motor.move(0);
-		// }
+		// Setting the variable values
+		if (spin_top_intake) {
+			top_intake_motor.move(127);
+		} else {
+			top_intake_motor.move(0);
+		}
+
+		if (spin_bottom_intake) {
+			bottom_intake_motor.move(127);
+		} else if (spin_bottom_intake_backward) {
+			bottom_intake_motor.move(-127);
+		} else {
+			bottom_intake_motor.move(0);
+		}
 
 		if (middle_goal_mech_extended) {
 			middle_goal_mech.extend();
